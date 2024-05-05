@@ -6,5 +6,5 @@
 ## 训练
 
 ```commandline
-python train.py
+python train.py --batch_size 4 --device cuda:0 --save_ckpt_folder ./ckpt --save_ckpt_name test.ckpt
 ```
