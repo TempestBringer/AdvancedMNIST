@@ -21,12 +21,13 @@ def q_image_to_numpy(qimg: QImage):
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.draw_height = 200
+        self.draw_max_height = 220
+        self.draw_min_height = 20
         self.setWindowTitle("AdvancedMNIST")
 
         # 窗口基本属性
         self.resize(1440, 720)
-        self.setWindowOpacity(0.5)
+        # self.setWindowOpacity(0.5)
         # 垂直序列
         # self.layout = QVBoxLayout(self)
 
@@ -129,7 +130,7 @@ class MainWindow(QWidget):
         position_x = event.pos().x()
         position_y = event.pos().y()
         pos_tmp = (position_x, position_y)
-        if position_y < self.draw_height:
+        if self.draw_min_height < position_y < self.draw_max_height:
             # pos_tmp添加到self.pos_xy中
             self.pos_xy.append(pos_tmp)
             self.update()
