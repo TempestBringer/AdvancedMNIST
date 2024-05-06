@@ -9,6 +9,8 @@ from PyQt5.QtCore import Qt, QRect, QPoint, QSize
 from PyQt5.QtGui import QPainter, QPen, QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QPushButton, QVBoxLayout, QLineEdit
 
+from infer import AdvancedMNISTInfer
+
 
 def q_image_to_numpy(qimg: QImage):
     ptr = qimg.constBits()
@@ -23,10 +25,22 @@ class MainWindow(QWidget):
         super().__init__()
         self.draw_max_height = 220
         self.draw_min_height = 20
-        self.setWindowTitle("AdvancedMNIST")
+        # 网络区参数
+        self.read_ckpt = "ckpt/test.ckpt"
+        self.symbol_mapping_path = "./ckpt/symbol_mapping.npy"
+        self.output_class = 16
+        self.image_compress_x = 28
+        self.image_compress_y = 28
+        self.infer_module = AdvancedMNISTInfer(self.read_ckpt,
+                                               self.symbol_mapping_path,
+                                               self.output_class,
+                                               self.image_compress_x,
+                                               self.image_compress_y)
 
-        # 窗口基本属性
+        # 窗口设置
+        self.setWindowTitle("AdvancedMNIST")
         self.resize(1440, 720)
+        # 窗口透明度
         # self.setWindowOpacity(0.5)
         # 垂直序列
         # self.layout = QVBoxLayout(self)
@@ -179,12 +193,14 @@ class MainWindow(QWidget):
         infer_results = ""
         screen_shots = self._dots_connection_to_image()
         for screen_shot in screen_shots:
-            infer_result = self._infer_from_image(screen_shot)
-            infer_results = infer_results + infer_result
+            # print(screen_shot.sum())
+            if screen_shot.sum() < 9000000:
+                infer_result = self._infer_from_image(screen_shot)
+                infer_results = infer_results + infer_result
         self.analyse_result_box.setText(self.analyse_result_box.text() + infer_results)
 
     def _infer_from_image(self, image: np.ndarray) -> str:
-        return "0"
+        return self.infer_module.infer_from_raw_image(image)
 
     def _dots_connection_to_image(self):
         screen_shots = []
@@ -192,8 +208,7 @@ class MainWindow(QWidget):
             start_x = 22 + 200 * i
             start_y = 22
             ss_q_pixmap: QPixmap = self.grab(rectangle=QRect(QPoint(start_x, start_y), QSize(196, 196)))
-            ss_numpy: np.ndarray = q_image_to_numpy(ss_q_pixmap.toImage().scaledToWidth(28).scaledToHeight(28))[...,
-                                   0:3]
+            ss_numpy: np.ndarray = q_image_to_numpy(ss_q_pixmap.toImage())[..., 0:3]
             ss_numpy_gray = ss_numpy.mean(axis=2)
             # print(2)
             # print(ss_numpy_gray.shape)
