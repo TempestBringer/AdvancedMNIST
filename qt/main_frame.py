@@ -66,6 +66,7 @@ class MainWindow(QWidget):
         self.calc_result_box = QLineEdit()
         self.calc_result_box.setParent(self)
         self.calc_result_box.setGeometry(150, 600, 200, 40)
+        # 推理网络
 
     def paintEvent(self, event):
         painter = QPainter()
@@ -104,6 +105,8 @@ class MainWindow(QWidget):
 
                 painter.drawLine(point_start[0], point_start[1], point_end[0], point_end[1])
                 point_start = point_end
+        pen = QPen(Qt.black, 4, Qt.SolidLine)
+        painter.setPen(pen)
         if len(self.static_lines) > 1:
             point_start = self.static_lines[0]
             for pos_tmp in self.static_lines:
@@ -166,8 +169,11 @@ class MainWindow(QWidget):
 
     def _calc_analyse_result(self):
         to_be_calc_text = self.analyse_result_box.text()
-        calc_result = 0
-        self.calc_result_box.setText(str(calc_result))
+        try:
+            calc_result = eval(to_be_calc_text)
+            self.calc_result_box.setText(str(calc_result))
+        except:
+            self.calc_result_box.setText("表达式有误")
 
     def analyst_hand_inputs(self):
         infer_results = ""
@@ -183,19 +189,19 @@ class MainWindow(QWidget):
     def _dots_connection_to_image(self):
         screen_shots = []
         for i in range(7):
-            start_x = 25 + 200 * i
-            start_y = 25
-            ss_q_pixmap: QPixmap = self.grab(rectangle=QRect(QPoint(start_x, start_y), QSize(190, 190)))
-            ss_numpy: np.ndarray = q_image_to_numpy(ss_q_pixmap.toImage().scaledToWidth(28).scaledToHeight(28))[..., 0:3]
+            start_x = 22 + 200 * i
+            start_y = 22
+            ss_q_pixmap: QPixmap = self.grab(rectangle=QRect(QPoint(start_x, start_y), QSize(196, 196)))
+            ss_numpy: np.ndarray = q_image_to_numpy(ss_q_pixmap.toImage().scaledToWidth(28).scaledToHeight(28))[...,
+                                   0:3]
             ss_numpy_gray = ss_numpy.mean(axis=2)
             # print(2)
             # print(ss_numpy_gray.shape)
-            # plt.imshow(ss_numpy)
-            # plt.show()
+            plt.imshow(ss_numpy)
+            plt.show()
             # input()
             screen_shots.append(ss_numpy_gray)
         return screen_shots
-
 
 
 if __name__ == "__main__":

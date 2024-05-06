@@ -61,21 +61,26 @@ class HandWrittenMathSymbols(BaseDataSet):
             self.class_to_channel_mapping.setdefault(label, i)
             label_folder_path = self.base_path + "/" + label
             labeled_images = os.listdir(label_folder_path)
-
-            for j in tqdm(range(len(labeled_images))):
+            per_class_object_counter = 0
+            for j in range(len(labeled_images)):
                 labeled_image = labeled_images[j]
             # for labeled_image in labeled_images:
                 labeled_image_path = label_folder_path + "/" + labeled_image
                 labeled_image = read_image(labeled_image_path, self.resize_x, self.resize_y)
+                # label_vec = np.zeros(self.output_class, dtype=np.float32)[np.newaxis, :]
                 label_vec = np.zeros(self.output_class, dtype=np.float32)
-                # print(label_vec.shape)
-                # print(labeled_image.shape)
+
+                # label_vec[0][i] = 1
                 label_vec[i] = 1
                 if random.random() < self.train_test_split_ratio:
                     self.train_datasets.append((labeled_image, label_vec))
                 else:
                     self.test_datasets.append((labeled_image, label_vec))
-            print("标签 " + label + " 读取完毕")
+                # print(label_vec.shape)
+                # print(labeled_image.shape)
+                # input()
+                per_class_object_counter += 1
+            print("标签 " + label + " 读取完毕, 共" + str(per_class_object_counter) + "个项目")
 
 
 if __name__ == "__main__":
