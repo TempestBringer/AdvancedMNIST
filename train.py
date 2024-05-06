@@ -134,6 +134,7 @@ if __name__ == "__main__":
         total_try = 0
         success_try = 0
         print("testing")
+
         for j, cur_test_data in tqdm(enumerate(test_data_provider, 0)):
             test_image, label = cur_test_data
             test_image = test_image.to(device)
