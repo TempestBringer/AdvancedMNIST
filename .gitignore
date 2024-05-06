@@ -2,3 +2,5 @@ ckpt
 .idea
 datasets
 files
+
+**/__pycache__
