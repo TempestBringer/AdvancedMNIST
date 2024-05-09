@@ -3,7 +3,7 @@ import argparse
 import numpy as np
 import torch
 
-from nets import SampleNetA
+from nets import *
 from utils.dataset_prepare import read_image, process_image
 
 
@@ -27,14 +27,20 @@ class AdvancedMNISTInfer(object):
         self.output_class = output_class
         self.compress_x = compress_x
         self.compress_y = compress_y
-        # 实例化网络
+
+        # 实例化网络=============================================================================================【】
         self.net = SampleNetA(self.output_class, False)
+        # self.net = SampleNetB(self.output_class, False)
+        # self.net = AModel(28 * 28, 16)
+
         # 加载权重
         self.net.load_state_dict(torch.load(self.ckpt_path))
         # 加载mapping
         self.symbol_mapping = np.load(symbol_mapping_path, allow_pickle=True).item()
         self.symbol_mapping[12] = "/"
         self.symbol_mapping[13] = "*"
+        self.symbol_mapping[14] = "("
+        self.symbol_mapping[15] = ")"
     def infer_from_raw_image(self, data: np.ndarray):
         data = process_image(data, self.compress_x, self.compress_y)
         pos = self.infer_from_processed_image(data)

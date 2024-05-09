@@ -66,6 +66,11 @@ class MainWindow(QWidget):
         self.analyse_result_box = QLineEdit()
         self.analyse_result_box.setParent(self)
         self.analyse_result_box.setGeometry(150, 500, 200, 40)
+        # # 清除文本框按钮
+        # self.clear_button = QPushButton('清除文本框')
+        # self.clear_button.setParent(self)
+        # self.clear_button.setGeometry(150, 550, 100, 40)
+        # self.clear_button.clicked.connect(self._clear_paint_board)
         # 清除按钮
         self.clear_button = QPushButton('清除')
         self.clear_button.setParent(self)

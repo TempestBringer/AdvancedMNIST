@@ -1,6 +1,7 @@
 ckpt
 .idea
+AdvancedMnist.zip
 datasets
 files
-
+**.orig
 **/__pycache__
