@@ -6,7 +6,7 @@ import numpy as np
 
 from tqdm import tqdm
 
-from nets import SampleNetA
+from nets import SampleNetA, SampleNetB
 from utils.dataset_prepare import HandWrittenMathSymbols
 
 
@@ -16,16 +16,16 @@ def parse_args():
     parser.add_argument("--seed", type=int, help="随机种子")
     parser.add_argument("--save_ckpt_folder", type=str, help="权重文件路径，用于保存")
     parser.add_argument("--save_ckpt_name", type=str, help="权重文件名，用于保存")
-    parser.add_argument("--epoch", type=int, default=200, help="训练轮数")
-    parser.add_argument("--lr_decay_after_epoch", type=int, default=50, help="lr在该训练轮数后线性衰减")
+    parser.add_argument("--epoch", type=int, default=1000, help="训练轮数")
+    parser.add_argument("--lr_decay_after_epoch", type=int, default=40, help="lr在该训练轮数后线性衰减")
 
     parser.add_argument("--batch_size", type=int, default=4, help="Batch size")
     parser.add_argument("--device", type=str, default="cuda:0", help="训练设备，cuda:0等或cpu")
-    parser.add_argument("--image_compress_x", type=int, default=28, help="训练集图片放缩到的大小")
-    parser.add_argument("--image_compress_y", type=int, default=28, help="训练集图片放缩到的大小")
+    parser.add_argument("--image_compress_x", type=int, default=32, help="训练集图片放缩到的大小")
+    parser.add_argument("--image_compress_y", type=int, default=32, help="训练集图片放缩到的大小")
     parser.add_argument("--output_class", type=int, default=16, help="最后一层输出向量长度")
     parser.add_argument("--data_load_workers", type=int, default=1, help="数据集加载线程数")
-    parser.add_argument("--lr", type=float, default=0.02, help="学习率")
+    parser.add_argument("--lr", type=float, default=0.01, help="学习率")
     parser.add_argument("--momentum", type=float, default=0.9, help="动量优化器参数")
     return parser.parse_args()
 
@@ -146,28 +146,31 @@ if __name__ == "__main__":
         # lr_scheduler.step(i)
         optimizer.param_groups[0]['lr'] = get_new_lr(i, global_args.epoch, global_args.lr_decay_after_epoch, global_args.lr, 1E-5)
 
-        total_try = 0
-        success_try = 0
-        print("testing")
-        for j, cur_test_data in tqdm(enumerate(test_data_provider, 0)):
-            test_image, label = cur_test_data
-            test_image = test_image.to(device)
-            label = label.to(device)
-            output = net(test_image)
-            # test_output = find_max_index_in_tensor(output.cpu())
-            # test_label = find_max_index_in_tensor(label)
-            temp_test_report, success_sum, fail_sum = get_correct_test_count(label, output)
-            # print(output)
-            # print(label)
-            # print(test_output)
-            # print(test_label)
-            # input()
-            total_try += success_sum + fail_sum
-            success_try += success_sum
-            test_report = test_report + temp_test_report
+        if i % 5==0:
+            total_try = 0
+            success_try = 0
+            print("testing")
+            for j, cur_test_data in enumerate(test_data_provider, 0):
+                test_image, label = cur_test_data
+                test_image = test_image.to(device)
+                label = label.to(device)
+                output = net(test_image)
+                # test_output = find_max_index_in_tensor(output.cpu())
+                # test_label = find_max_index_in_tensor(label)
+                temp_test_report, success_sum, fail_sum = get_correct_test_count(label, output)
+                # print(output)
+                # print(label)
+                # print(test_output)
+                # print(test_label)
+                # input()
+                total_try += success_sum + fail_sum
+                success_try += success_sum
+                test_report = test_report + temp_test_report
 
-        # print("avg loss: ", cur_loss / loss_count)
-        print("success on test set: ", success_try / total_try)
+            # print("avg loss: ", cur_loss / loss_count)
+            print("success on test set: ", success_try / total_try)
+        if i % 20 == 0:
+            torch.save(net.state_dict(), global_args.save_ckpt_folder + "/" + global_args.save_ckpt_name)
 
     # 保存权重
     torch.save(net.state_dict(), global_args.save_ckpt_folder + "/" + global_args.save_ckpt_name)

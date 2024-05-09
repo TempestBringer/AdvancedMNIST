@@ -10,7 +10,7 @@ from tqdm import tqdm
 from PIL import Image
 
 
-def read_image(path: str, resize_x: int, resize_y: int):
+def read_image(path: str, resize_x: int, resize_y: int, do_resize_and_padding=False, padding_from_ratio = 0.75):
     """
     读取RGB图像转化为灰度并预处理
     :param path:
@@ -20,6 +20,19 @@ def read_image(path: str, resize_x: int, resize_y: int):
     """
     raw_image = cv2.imread(path)
     grayed_image = cv2.cvtColor(raw_image, cv2.COLOR_BGR2GRAY)
+    # plt.imshow(grayed_image)
+    # plt.show()
+    if do_resize_and_padding:
+        resized_grayed_image = cv2.resize(grayed_image, (int(grayed_image.shape[0] * padding_from_ratio), int(grayed_image.shape[1] * padding_from_ratio)))
+        top = bottom = int((grayed_image.shape[0] - resized_grayed_image.shape[0]) / 2)
+        left = right = int((grayed_image.shape[1] - resized_grayed_image.shape[1]) / 2)
+        border_color = (255, 255, 255)  # 边框颜色，这里是黑色
+        grayed_image = cv2.copyMakeBorder(resized_grayed_image, top, bottom, left, right, cv2.BORDER_CONSTANT,
+                                            value=border_color)
+        # plt.imshow(grayed_image)
+        # plt.show()
+    # print(grayed_image.shape)
+    # input()
     resized_image = process_image(grayed_image, resize_x, resize_y)
     return resized_image
 
@@ -82,6 +95,7 @@ class HandWrittenMathSymbols(BaseDataSet):
                 labeled_image = labeled_images[j]
                 # for labeled_image in labeled_images:
                 labeled_image_path = label_folder_path + "/" + labeled_image
+                # labeled_image = read_image(labeled_image_path, self.resize_x, self.resize_y, do_resize_and_padding=True)
                 labeled_image = read_image(labeled_image_path, self.resize_x, self.resize_y)
                 # label_vec = np.zeros(self.output_class, dtype=np.float32)[np.newaxis, :]
                 label_vec = np.zeros(self.output_class, dtype=np.float32)

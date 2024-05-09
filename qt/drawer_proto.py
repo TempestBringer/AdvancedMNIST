@@ -90,6 +90,6 @@ class Drawer(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    pyqt_learn = Example()
+    pyqt_learn = Drawer()
     pyqt_learn.show()
     app.exec_()

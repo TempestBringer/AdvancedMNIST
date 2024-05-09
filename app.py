@@ -29,8 +29,8 @@ class MainWindow(QWidget):
         self.read_ckpt = "ckpt/test.ckpt"
         self.symbol_mapping_path = "./ckpt/symbol_mapping.npy"
         self.output_class = 16
-        self.image_compress_x = 28
-        self.image_compress_y = 28
+        self.image_compress_x = 32
+        self.image_compress_y = 32
         self.infer_module = AdvancedMNISTInfer(self.read_ckpt,
                                                self.symbol_mapping_path,
                                                self.output_class,
@@ -212,8 +212,8 @@ class MainWindow(QWidget):
             ss_numpy_gray = ss_numpy.mean(axis=2)
             # print(2)
             # print(ss_numpy_gray.shape)
-            plt.imshow(ss_numpy)
-            plt.show()
+            # plt.imshow(ss_numpy)
+            # plt.show()
             # input()
             screen_shots.append(ss_numpy_gray)
         return screen_shots
