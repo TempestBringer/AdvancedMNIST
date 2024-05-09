@@ -148,7 +148,7 @@ if __name__ == "__main__":
         # lr_scheduler.step(i)
         optimizer.param_groups[0]['lr'] = get_new_lr(i, global_args.epoch, global_args.lr_decay_after_epoch, global_args.lr, 1E-5)
 
-        if i % 5==0:
+        if i % 5 == 0:
             total_try = 0
             success_try = 0
             print("testing")

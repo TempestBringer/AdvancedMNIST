@@ -51,18 +51,16 @@ class SampleNetA(nn.Module):
     def build_layers(self):
         # in_channel, out_channel, kernel_size, stride, padding, padding_mode, dilation, groups, bias
         # 32x32x1 -> 28*28*8
-        self.layers.append(nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3))
-        self.layers.append(nn.BatchNorm2d(8))
-        self.layers.append(nn.Conv2d(in_channels=8, out_channels=8, kernel_size=3))
+        self.layers.append(nn.Conv2d(in_channels=1, out_channels=8, kernel_size=5))
         # 28*28*8 -> 14*14*8
         self.layers.append(nn.MaxPool2d(2))
-        # 12*12*8 -> 8*8*32
+        # 14*14*8 -> 10*10*32
         self.layers.append(nn.Conv2d(in_channels=8, out_channels=32, kernel_size=5))
         self.layers.append(nn.ReLU())
-        # 8*8*32 -> 2048
+        # 10*10*32 -> 2048
         self.layers.append(nn.Flatten(1, 3))
         # 2048 -> 256
-        self.layers.append(nn.Linear(8*8*32, 256))
+        self.layers.append(nn.Linear(10*10*32, 256))
         self.layers.append(nn.ReLU())
         # 256 -> 64
         self.layers.append(nn.Linear(256, 64))
@@ -155,7 +153,7 @@ class SampleNetB(nn.Module):
         # return x
 
 
-class SampleNetBBlock(nn.Module):
+class SampleNetCBlock(nn.Module):
     def __init__(self, ch_in, ch_out, stride=1):
         super().__init__()
         self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=stride, padding=1)
@@ -184,7 +182,7 @@ class SampleNetBBlock(nn.Module):
         return out
 
 
-class SampleNetB(nn.Module):
+class SampleNetC(nn.Module):
     def __init__(self, output_class: int, is_training=True):
         super().__init__()
         self.conv1 = nn.Sequential(
@@ -194,13 +192,13 @@ class SampleNetB(nn.Module):
 
         # follow 4 blocks
         # [b, 64, h, w] => [b, 128, h/2, w/2]
-        self.blk1 = SampleNetBBlock(32, 64, stride=2)
+        self.blk1 = SampleNetCBlock(32, 64, stride=2)
         # [b, 128, h/2, w/2] => [b, 256, h/4, w/4]
-        self.blk2 = SampleNetBBlock(64, 128, stride=2)
+        self.blk2 = SampleNetCBlock(64, 128, stride=2)
         # [b, 256, h/4, w/4] => [b, 512, h/8, w/8]
-        self.blk3 = SampleNetBBlock(128, 256, stride=2)
+        self.blk3 = SampleNetCBlock(128, 256, stride=2)
         # [b, 512, h/8, w/8] => [b, 512, h/16, w/16]
-        self.blk4 = SampleNetBBlock(256, 256, stride=2)
+        self.blk4 = SampleNetCBlock(256, 256, stride=2)
 
         self.out_layer = nn.Linear(256 * 1 * 1, output_class)
         self.output_relu = nn.ReLU()

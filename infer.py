@@ -13,8 +13,8 @@ def parse_args():
 
     parser.add_argument("--batch_size", type=int, default=4, help="Batch size")
     parser.add_argument("--device", type=str, default="cuda:0", help="训练设备，cuda:0等或cpu")
-    parser.add_argument("--image_compress_x", type=int, default=28, help="训练集图片放缩到的大小")
-    parser.add_argument("--image_compress_y", type=int, default=28, help="训练集图片放缩到的大小")
+    parser.add_argument("--image_compress_x", type=int, default=32, help="训练集图片放缩到的大小")
+    parser.add_argument("--image_compress_y", type=int, default=32, help="训练集图片放缩到的大小")
     parser.add_argument("--output_class", type=int, default=16, help="最后一层输出向量长度")
     return parser.parse_args()
 
