@@ -6,7 +6,7 @@ import numpy as np
 
 from tqdm import tqdm
 
-from nets import SampleNetA
+from nets import *
 from utils.dataset_prepare import HandWrittenMathSymbols
 
 
@@ -16,10 +16,10 @@ def parse_args():
     parser.add_argument("--seed", type=int, help="随机种子")
     parser.add_argument("--save_ckpt_folder", type=str, help="权重文件路径，用于保存")
     parser.add_argument("--save_ckpt_name", type=str, help="权重文件名，用于保存")
-    parser.add_argument("--epoch", type=int, default=200, help="训练轮数")
-    parser.add_argument("--lr_decay_after_epoch", type=int, default=50, help="lr在该训练轮数后线性衰减")
+    parser.add_argument("--epoch", type=int, default=50, help="训练轮数")
+    parser.add_argument("--lr_decay_after_epoch", type=int, default=10, help="lr在该训练轮数后线性衰减")
 
-    parser.add_argument("--batch_size", type=int, default=4, help="Batch size")
+    parser.add_argument("--batch_size", type=int, default=2, help="Batch size")
     parser.add_argument("--device", type=str, default="cuda:0", help="训练设备，cuda:0等或cpu")
     parser.add_argument("--image_compress_x", type=int, default=28, help="训练集图片放缩到的大小")
     parser.add_argument("--image_compress_y", type=int, default=28, help="训练集图片放缩到的大小")
@@ -83,8 +83,10 @@ if __name__ == "__main__":
     # 存储ckpt文件夹
     if not os.path.exists(global_args.save_ckpt_folder):
         os.mkdir(global_args.save_ckpt_folder)
-    # 实例化网络
+    # 实例化网络==============================================================================================【】
     net = SampleNetA(output_class=global_args.output_class, is_training=True)
+    # net = SampleNetB(output_class=global_args.output_class, is_training=True)
+    # net = AModel(28 * 28, 16)
     # 是否继续训练
     if global_args.read_ckpt is not None:
         net.load_state_dict(torch.load(global_args.read_ckpt))
