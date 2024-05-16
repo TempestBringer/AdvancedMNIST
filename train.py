@@ -18,7 +18,7 @@ def parse_args():
     parser.add_argument("--save_ckpt_name", type=str, help="权重文件名，用于保存")
     parser.add_argument("--epoch", type=int, default=50, help="训练轮数")
     parser.add_argument("--lr_decay_after_epoch", type=int, default=10, help="lr在该训练轮数后线性衰减")
-    parser.add_argument("--batch_size", type=int, default=2, help="Batch size")
+    parser.add_argument("--batch_size", type=int, default=4, help="Batch size")
 
     parser.add_argument("--device", type=str, default="cuda:0", help="训练设备，cuda:0等或cpu")
     parser.add_argument("--image_compress_x", type=int, default=32, help="训练集图片放缩到的大小")
@@ -84,9 +84,10 @@ if __name__ == "__main__":
     if not os.path.exists(global_args.save_ckpt_folder):
         os.mkdir(global_args.save_ckpt_folder)
     # 实例化网络==============================================================================================【】
-    net = SampleNetA(output_class=global_args.output_class, is_training=True)
-    # net = SampleNetB(output_class=global_args.output_class, is_training=True)
+    # net = SampleNetA(output_class=global_args.output_class, is_training=True)
+    net = SampleNetB(output_class=global_args.output_class, is_training=True)
     # net = AModel(28 * 28, 16)
+    # net = AModel(32 * 32, 16)
     # 是否继续训练
     if global_args.read_ckpt is not None:
         net.load_state_dict(torch.load(global_args.read_ckpt))
@@ -111,8 +112,9 @@ if __name__ == "__main__":
     # 损失函数
     # criterion = torch.nn.L1Loss()
     criterion = torch.nn.MSELoss()
-    # 优化器
+    # 优化器==============================================================================================================【】
     optimizer = torch.optim.SGD(net.parameters(), lr=global_args.lr, momentum=global_args.momentum)
+    # optimizer = torch.optim.Adam(net.parameters(), lr=global_args.lr,amsgrad=True)
     # print(optimizer.param_groups)
     # print(type(optimizer.param_groups))
     # lr_scheduler = LambdaLR(optimizer=optimizer, lr_lambda=lambda epoch: get_new_lr(epoch, global_args.epoch, global_args.lr_decay_after_epoch, global_args.lr, 1E-5))
@@ -122,6 +124,8 @@ if __name__ == "__main__":
 
     # 训练循环
     loss = []
+    success_rate_train = []
+    success_rate_test = []
     # 测试报告
     test_report = np.zeros(shape=(global_args.epoch, global_args.output_class * 2))
     for i in range(global_args.epoch):
@@ -148,7 +152,7 @@ if __name__ == "__main__":
         # lr_scheduler.step(i)
         optimizer.param_groups[0]['lr'] = get_new_lr(i, global_args.epoch, global_args.lr_decay_after_epoch, global_args.lr, 1E-5)
 
-        if i % 5 == 0:
+        if i % 4 == 0:
             total_try = 0
             success_try = 0
             print("testing")
@@ -171,6 +175,35 @@ if __name__ == "__main__":
 
             # print("avg loss: ", cur_loss / loss_count)
             print("success on test set: ", success_try / total_try)
+
+            # 训练集测试
+            if i % 4 == 0:
+                total_try = 0
+                success_try = 0
+                print("testing2")
+                for j, cur_test_data in enumerate(train_data_provider, 0):
+                    train_image, label = cur_test_data
+                    train_image = train_image.to(device)
+                    label = label.to(device)
+                    output = net(train_image)
+                    # test_output = find_max_index_in_tensor(output.cpu())
+                    # test_label = find_max_index_in_tensor(label)
+                    temp_test_report, success_sum, fail_sum = get_correct_test_count(label, output)
+                    # print(output)
+                    # print(label)
+                    # print(test_output)
+                    # print(test_label)
+                    # input()
+                    total_try += success_sum + fail_sum
+                    success_try += success_sum
+                    test_report = test_report + temp_test_report
+
+                # print("avg loss: ", cur_loss / loss_count)
+                print("success on train set: ", success_try / total_try)
+
+
+
+
         if i % 20 == 0:
             torch.save(net.state_dict(), global_args.save_ckpt_folder + "/" + global_args.save_ckpt_name)
 

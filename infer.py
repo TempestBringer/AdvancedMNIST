@@ -29,9 +29,10 @@ class AdvancedMNISTInfer(object):
         self.compress_y = compress_y
 
         # 实例化网络=============================================================================================【】
-        self.net = SampleNetA(self.output_class, False)
-        # self.net = SampleNetB(self.output_class, False)
+        # self.net = SampleNetA(self.output_class, False)
+        self.net = SampleNetB(self.output_class, False)
         # self.net = AModel(28 * 28, 16)
+        # self.net = AModel(32 * 32, 16)
 
         # 加载权重
         self.net.load_state_dict(torch.load(self.ckpt_path))

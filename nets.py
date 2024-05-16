@@ -54,6 +54,7 @@ class SampleNetA(nn.Module):
         self.layers.append(nn.Conv2d(in_channels=1, out_channels=8, kernel_size=5))
         # 28*28*8 -> 14*14*8
         self.layers.append(nn.MaxPool2d(2))
+        self.layers.append(nn.BatchNorm2d(8))
         # 14*14*8 -> 10*10*32
         self.layers.append(nn.Conv2d(in_channels=8, out_channels=32, kernel_size=5))
         self.layers.append(nn.ReLU())

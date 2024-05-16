@@ -15,7 +15,6 @@ from infer import AdvancedMNISTInfer
 def q_image_to_numpy(qimg: QImage):
     ptr = qimg.constBits()
     ptr.setsize(qimg.byteCount())
-
     mat = np.array(ptr).reshape(qimg.height(), qimg.width(), 4)  # 注意这地方通道数一定要填4，否则出错
     return mat
 
@@ -220,9 +219,8 @@ class MainWindow(QWidget):
             ss_numpy_gray = ss_numpy.mean(axis=2)
             # print(2)
             # print(ss_numpy_gray.shape)
-            # plt.imshow(ss_numpy)
-            # plt.show()
-            # input()
+            plt.plot(ss_numpy_gray)
+            plt.show()
             screen_shots.append(ss_numpy_gray)
         return screen_shots
 
