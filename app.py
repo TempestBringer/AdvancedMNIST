@@ -10,6 +10,7 @@ from PyQt5.QtGui import QPainter, QPen, QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QPushButton, QVBoxLayout, QLineEdit
 
 from infer import AdvancedMNISTInfer
+from utils.yaml_util import read_yaml_file
 
 
 def q_image_to_numpy(qimg: QImage):
@@ -20,16 +21,24 @@ def q_image_to_numpy(qimg: QImage):
 
 
 class MainWindow(QWidget):
-    def __init__(self):
+    def __init__(self, config_path: str):
         super().__init__()
+        # 读取参数
+        self.config_path = config_path
+        self.config = read_yaml_file(self.config_path)
+
         self.draw_max_height = 220
         self.draw_min_height = 20
         # 网络区参数
-        self.read_ckpt = "ckpt/test.ckpt"
-        self.symbol_mapping_path = "./ckpt/symbol_mapping.npy"
-        self.output_class = 16
-        self.image_compress_x = 32
-        self.image_compress_y = 32
+        self.read_ckpt = self.config['read_ckpt']
+        self.symbol_mapping_path = self.config['symbol_mapping_path']
+        self.output_class = self.config['output_class']
+        self.image_compress_x = self.config['image_compress_x']
+        self.image_compress_y = self.config['image_compress_y']
+        self.reverse_color = True
+        self.pen_width = 15
+        self.edge_width = 4
+        self.show_img_plot_on_analyse = False
         self.infer_module = AdvancedMNISTInfer(self.read_ckpt,
                                                self.symbol_mapping_path,
                                                self.output_class,
@@ -89,7 +98,7 @@ class MainWindow(QWidget):
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
-        pen = QPen(Qt.black, 10, Qt.SolidLine)
+        pen = QPen(Qt.black, self.pen_width, Qt.SolidLine)
         painter.setPen(pen)
 
         '''
@@ -123,7 +132,7 @@ class MainWindow(QWidget):
 
                 painter.drawLine(point_start[0], point_start[1], point_end[0], point_end[1])
                 point_start = point_end
-        pen = QPen(Qt.black, 4, Qt.SolidLine)
+        pen = QPen(Qt.black, self.edge_width, Qt.SolidLine)
         painter.setPen(pen)
         if len(self.static_lines) > 1:
             point_start = self.static_lines[0]
@@ -207,7 +216,7 @@ class MainWindow(QWidget):
         self.analyse_result_box.setText(self.analyse_result_box.text() + infer_results)
 
     def _infer_from_image(self, image: np.ndarray) -> str:
-        return self.infer_module.infer_from_raw_image(image)
+        return self.infer_module.infer_from_raw_image(image, reverse=self.reverse_color)
 
     def _dots_connection_to_image(self):
         screen_shots = []
@@ -219,14 +228,15 @@ class MainWindow(QWidget):
             ss_numpy_gray = ss_numpy.mean(axis=2)
             # print(2)
             # print(ss_numpy_gray.shape)
-            plt.plot(ss_numpy_gray)
-            plt.show()
+            if self.show_img_plot_on_analyse:
+                plt.imshow(ss_numpy_gray)
+                plt.show()
             screen_shots.append(ss_numpy_gray)
         return screen_shots
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = MainWindow("./config.yaml")
     window.show()
     sys.exit(app.exec_())

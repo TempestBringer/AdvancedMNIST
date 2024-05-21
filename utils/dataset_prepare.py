@@ -10,7 +10,8 @@ from tqdm import tqdm
 from PIL import Image
 
 
-def read_image(path: str, resize_x: int, resize_y: int, do_resize_and_padding=False, padding_from_ratio = 0.75):
+def read_image(path: str, resize_x: int, resize_y: int, do_resize_and_padding=False, padding_from_ratio = 0.75,
+               reverse=False):
     """
     读取RGB图像转化为灰度并预处理
     :param path:
@@ -33,21 +34,25 @@ def read_image(path: str, resize_x: int, resize_y: int, do_resize_and_padding=Fa
         # plt.show()
     # print(grayed_image.shape)
     # input()
-    resized_image = process_image(grayed_image, resize_x, resize_y)
+    resized_image = process_image(grayed_image, resize_x, resize_y, reverse=reverse)
     return resized_image
 
 
-def process_image(image: np.ndarray, resize_x: int, resize_y: int):
+def process_image(image: np.ndarray, resize_x: int, resize_y: int, reverse=False):
     """
     处理单通道的图像，进行压缩以及归一、在最前面添加维度
+    :param reverse: 是否反转颜色
     :param image:
     :param resize_x:
     :param resize_y:
     :return:
     """
     resized_image: np.ndarray = cv2.resize(image, (resize_x, resize_y))
-    resized_image = resized_image.astype(dtype=np.float32) / 255 + 1E-5
+    resized_image = resized_image.astype(dtype=np.float32) / 255
     resized_image = resized_image[np.newaxis, :]
+    if reverse:
+        resized_image = 1 - resized_image
+    resized_image = resized_image + 1E-5
     return resized_image
 
 
