@@ -25,4 +25,4 @@ lr_decay_after_epoch: 10
 save_ckpt_folder: "./ckpt"
 save_ckpt_name: "test.ckpt"
 test_on_train_set_interval: 4
-save_ckpt_interval: 20
+save_ckpt_interval: 10

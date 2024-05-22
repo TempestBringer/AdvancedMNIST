@@ -28,22 +28,22 @@ def find_max_index_in_tensor(x):
 
 
 def get_correct_test_count(label, output, global_config: dict):
-    temp_test_report = np.zeros(shape=(global_config['epoch'], global_config['output_class'] * 2))
-    success_sum = 0
-    fail_sum = 0
+    t_test_report = np.zeros(shape=(global_config['epoch'], global_config['output_class'] * 2))
+    t_success_sum = 0
+    t_fail_sum = 0
     row_count = label.shape[0]
     for g in range(row_count):
         x_row = label[g]
         y_row = output[g]
         x_index = find_max_index_in_tensor(x_row)
         y_index = find_max_index_in_tensor(y_row)
-        temp_test_report[g][x_index * 2] += 1
+        t_test_report[g][x_index * 2] += 1
         if x_index == y_index:
-            success_sum += 1
-            temp_test_report[g][x_index * 2 + 1] += 1
+            t_success_sum += 1
+            t_test_report[g][x_index * 2 + 1] += 1
         else:
-            fail_sum += 1
-    return (temp_test_report, success_sum, fail_sum)
+            t_fail_sum += 1
+    return t_test_report, t_success_sum, t_fail_sum
 
 
 def get_new_lr(current_epoch: int, total_epoch: int, decay_epoch: int, initial_lr: float, target_lr: float) -> float:
@@ -133,7 +133,7 @@ if __name__ == "__main__":
         # lr_scheduler.step(i)
         optimizer.param_groups[0]['lr'] = get_new_lr(i, epoch, config['lr_decay_after_epoch'], lr, 1E-5)
 
-        if i % config['test_on_train_set_interval'] == 0:
+        if i % config['test_on_train_set_interval'] == config['test_on_train_set_interval'] - 1:
             total_try = 0
             success_try = 0
             print("testing on train set:")
@@ -149,8 +149,10 @@ if __name__ == "__main__":
 
             print("success on train set: ", success_try / total_try)
 
-        if i % config['save_ckpt_interval'] == 0:
-            torch.save(net.state_dict(), save_ckpt_folder + "/" + save_ckpt_name)
+        if i % config['save_ckpt_interval'] == config['save_ckpt_interval'] - 1:
+            ckpt_final_save_path = save_ckpt_folder + "/" + save_ckpt_name
+            print(f"saving ckpt to {ckpt_final_save_path}")
+            torch.save(net.state_dict(), ckpt_final_save_path)
 
     # 保存权重
     torch.save(net.state_dict(), save_ckpt_folder + "/" + save_ckpt_name)

@@ -12,10 +12,10 @@ def read_yaml_file(yaml_file_path: str):
 
     # 将字符串转化为字典或列表
     # print("***转化yaml数据为字典或列表***")
-    data = yaml.load(file_data, Loader=yaml.FullLoader)
-    print(data)
+    yml_data = yaml.load(file_data, Loader=yaml.FullLoader)
+    print(yml_data)
     # print("类型：", type(data))
-    return data
+    return yml_data
 
 
 if __name__ == "__main__":
