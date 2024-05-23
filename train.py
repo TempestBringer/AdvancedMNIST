@@ -55,14 +55,14 @@ if __name__ == "__main__":
     if os.path.exists(config['read_ckpt']):
         net.load_state_dict(torch.load(config['read_ckpt']))
     # 读取训练集
-    dataset = HandWrittenMathSymbols("手写数学符号数据集",
-                                     config['dataset_train'],
-                                     config['output_class'],
-                                     config["image_compress_x"],
-                                     config["image_compress_y"],
-                                     train_test_split_ratio=1.0)
+    train_dataset = HandWrittenMathSymbols("MNIST-训练集",
+                                           config['dataset_train'],
+                                           config['output_class'],
+                                           config["image_compress_x"],
+                                           config["image_compress_y"],
+                                           train_test_split_ratio=1.0)
     # 打包进dataloader
-    train_data_provider = torch.utils.data.DataLoader(dataset.train_datasets,
+    train_data_provider = torch.utils.data.DataLoader(train_dataset.train_datasets,
                                                       batch_size=config['batch_size'],
                                                       shuffle=True,
                                                       num_workers=config['data_load_workers'])
@@ -72,7 +72,6 @@ if __name__ == "__main__":
     criterion = torch.nn.MSELoss()
     # 优化器==============================================================================================================【】
     optimizer = torch.optim.SGD(net.parameters(), lr=lr, momentum=config['momentum'])
-    # optimizer = torch.optim.Adam(net.parameters(), lr=global_args.lr,amsgrad=True)
     # 发往显卡
     net = net.to(device)
     criterion = criterion.to(device)
@@ -103,25 +102,8 @@ if __name__ == "__main__":
         optimizer.param_groups[0]['lr'] = get_new_lr(i, epoch, config['lr_decay_after_epoch'], lr, 1E-5)
 
         if i % config['test_on_train_set_interval'] == config['test_on_train_set_interval'] - 1:
-            run_test(config, net.state_dict(), log_read_file=False)
-        # if i % config['test_on_train_set_interval'] == config['test_on_train_set_interval'] - 1:
-        #     total_try = 0
-        #     success_try = 0
-        #     # 测试报告
-        #     test_report = []
-        #     print("testing on train set:")
-        #     for j, cur_test_data in enumerate(train_data_provider, 0):
-        #         test_image, label = cur_test_data
-        #         test_image = test_image.to(device)
-        #         label = label.to(device)
-        #         output = net(test_image)
-        #         temp_test_report, success_sum, fail_sum = get_correct_test_count(label, output, config)
-        #         total_try += success_sum + fail_sum
-        #         success_try += success_sum
-        #         test_report.extend(temp_test_report)
-        #
-        #     print("success on train set: ", success_try / total_try)
-        #     # 处理测试报告
+            print("在训练集上测试")
+            run_test(config, net.state_dict(), log_read_file=False, test_dataset_provider=train_data_provider)
 
 
         if i % config['save_ckpt_interval'] == config['save_ckpt_interval'] - 1:
@@ -132,5 +114,5 @@ if __name__ == "__main__":
     # 保存权重
     torch.save(net.state_dict(), save_ckpt_folder + "/" + save_ckpt_name)
     np.save(save_ckpt_folder + "/current_loss.npy", loss)
-    np.save(save_ckpt_folder + "/symbol_mapping.npy", dataset.class_to_channel_mapping)
+    np.save(save_ckpt_folder + "/symbol_mapping.npy", train_dataset.class_to_channel_mapping)
 

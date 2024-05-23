@@ -28,4 +28,4 @@ test_on_train_set_interval: 4
 save_ckpt_interval: 4
 
 # test
-test_save_path: "./test"
+test_save_path: "./ckpt"

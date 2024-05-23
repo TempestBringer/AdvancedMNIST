@@ -17,7 +17,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_test(global_config: dict, state_dict=None, log_read_file=True):
+def run_test(global_config: dict, state_dict=None, log_read_file=True, test_dataset_provider=None):
     # 设备
     device = global_config['device']
     device = torch.device(device)
@@ -30,18 +30,19 @@ def run_test(global_config: dict, state_dict=None, log_read_file=True):
     else:
         net.load_state_dict(state_dict)
     # 读取测试数
-    dataset = HandWrittenMathSymbols("手写数学符号数据集",
-                                     global_config['dataset_test'],
-                                     global_config['output_class'],
-                                     global_config["image_compress_x"],
-                                     global_config["image_compress_y"],
-                                     train_test_split_ratio=0.0,
-                                     log_read_file=log_read_file)
-    # 打包进dataloader
-    test_data_provider = torch.utils.data.DataLoader(dataset.test_datasets,
-                                                     batch_size=global_config['batch_size'],
-                                                     shuffle=True,
-                                                     num_workers=global_config['data_load_workers'])
+    if test_dataset_provider is None:
+        read_dataset = HandWrittenMathSymbols("MNIST-测试集",
+                                              global_config['dataset_test'],
+                                              global_config['output_class'],
+                                              global_config["image_compress_x"],
+                                              global_config["image_compress_y"],
+                                              train_test_split_ratio=0.0,
+                                              log_read_file=log_read_file)
+        # 打包进dataloader
+        test_data_provider = torch.utils.data.DataLoader(read_dataset.test_datasets,
+                                                         batch_size=global_config['batch_size'],
+                                                         shuffle=True,
+                                                         num_workers=global_config['data_load_workers'])
     # 发往显卡
     net = net.to(device)
     # 统计数据
@@ -58,7 +59,7 @@ def run_test(global_config: dict, state_dict=None, log_read_file=True):
         success_try += success_sum
         test_report = test_report + temp_test_report
 
-    print("success on test set: ", success_try / total_try)
+    print(f"测试总正确率{success_try / total_try}，其中: ", )
 
     # 保存测试数据
     test_report_save_path = global_config['test_save_path']
@@ -69,7 +70,7 @@ def run_test(global_config: dict, state_dict=None, log_read_file=True):
         classify_correct_count = test_report[test_report_row_index][0]
         classify_wrong_count = test_report[test_report_row_index][1]
         print(f"在标签{str(label_mapping[test_report_row_index])}上，分类正确数{classify_correct_count}，"
-              f"错误数{classify_wrong_count}，正确率{classify_correct_count/(classify_correct_count + classify_wrong_count)}")
+              f"错误数{classify_wrong_count}，正确率{classify_correct_count / (classify_correct_count + classify_wrong_count)}")
 
     return total_try, success_try, test_report
 
