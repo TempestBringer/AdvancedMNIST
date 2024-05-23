@@ -76,17 +76,20 @@ test_save_path: 测试报告暴论路径，如"./ckpt"，在完成测试后其�
 ## 训练
 
 ```commandline
+python train.py
 python train.py --config config.yaml
 ```
 
 ## 测试
 
 ```commandline
+python test.py
 python test.py --config config.yaml
 ```
 ## 推理
 
 ```commandline
+python infer.py
 python infer.py --config config.yaml
 ```
 
