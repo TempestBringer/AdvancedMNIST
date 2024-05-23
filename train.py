@@ -52,8 +52,11 @@ if __name__ == "__main__":
     net = SampleNetB(output_class=config['output_class'], is_training=True)
 
     # 是否继续训练
-    if os.path.exists(config['read_ckpt']):
-        net.load_state_dict(torch.load(config['read_ckpt']))
+    try:
+        if os.path.exists(config['read_ckpt']):
+            net.load_state_dict(torch.load(config['read_ckpt']))
+    except:
+        pass
     # 读取训练集
     train_dataset = HandWrittenMathSymbols("MNIST-训练集",
                                            config['dataset_train'],

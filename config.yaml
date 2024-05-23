@@ -8,8 +8,8 @@ data_load_workers: 1
 # dataset
 dataset_do_split: False
 dataset_do_split_ratio: 0.7
-dataset_train: "./datasets/MNIST/train"
-dataset_test: "./datasets/MNIST/test"
+dataset_train: "./MNIST/train"
+dataset_test: "./MNIST/test"
 
 # load ckpt
 read_ckpt: "./ckpt/test.ckpt"

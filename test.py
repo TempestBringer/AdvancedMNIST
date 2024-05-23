@@ -39,7 +39,7 @@ def run_test(global_config: dict, state_dict=None, log_read_file=True, test_data
                                               train_test_split_ratio=0.0,
                                               log_read_file=log_read_file)
         # 打包进dataloader
-        test_data_provider = torch.utils.data.DataLoader(read_dataset.test_datasets,
+        test_dataset_provider = torch.utils.data.DataLoader(read_dataset.test_datasets,
                                                          batch_size=global_config['batch_size'],
                                                          shuffle=True,
                                                          num_workers=global_config['data_load_workers'])
@@ -49,7 +49,7 @@ def run_test(global_config: dict, state_dict=None, log_read_file=True, test_data
     total_try = 0
     success_try = 0
     test_report = np.zeros(shape=(global_config['output_class'], 2))
-    for j, cur_data in tqdm(enumerate(test_data_provider, 0)):
+    for j, cur_data in tqdm(enumerate(test_dataset_provider, 0)):
         input_image, label = cur_data
         input_tensor = torch.tensor(input_image).to(device)
         infer_result: torch.FloatTensor = net(input_tensor)

@@ -7,3 +7,4 @@ test
 files
 **.orig
 **/__pycache__
+MNIST
