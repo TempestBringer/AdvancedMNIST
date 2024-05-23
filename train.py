@@ -1,12 +1,11 @@
 import os
-import yaml
-import torch
 import argparse
 import numpy as np
 
 from tqdm import tqdm
 
 from nets import *
+from test import run_test
 from utils.yaml_util import read_yaml_file
 from utils.dataset_prepare import HandWrittenMathSymbols
 
@@ -15,35 +14,6 @@ def parse_args():
     parser = argparse.ArgumentParser("手写数学符号数据集的网络训练")
     parser.add_argument("--config", default="./config.yaml", type=str, help="配置文件路径")
     return parser.parse_args()
-
-
-def find_max_index_in_tensor(x):
-    x = x.flatten()
-    cur_max = x[0]
-    cur_max_index = 0
-    for m in range(x.shape[0]):
-        if x[m] > cur_max:
-            cur_max_index = m
-    return cur_max_index
-
-
-def get_correct_test_count(label, output, global_config: dict):
-    t_test_report = np.zeros(shape=(global_config['epoch'], global_config['output_class'] * 2))
-    t_success_sum = 0
-    t_fail_sum = 0
-    row_count = label.shape[0]
-    for g in range(row_count):
-        x_row = label[g]
-        y_row = output[g]
-        x_index = find_max_index_in_tensor(x_row)
-        y_index = find_max_index_in_tensor(y_row)
-        t_test_report[g][x_index * 2] += 1
-        if x_index == y_index:
-            t_success_sum += 1
-            t_test_report[g][x_index * 2 + 1] += 1
-        else:
-            t_fail_sum += 1
-    return t_test_report, t_success_sum, t_fail_sum
 
 
 def get_new_lr(current_epoch: int, total_epoch: int, decay_epoch: int, initial_lr: float, target_lr: float) -> float:
@@ -111,8 +81,7 @@ if __name__ == "__main__":
     loss = []
     success_rate_train = []
     success_rate_test = []
-    # 测试报告
-    test_report = np.zeros(shape=(epoch, config['output_class'] * 2))
+
     for i in range(epoch):
         loss_count = 0
         loss_sum = 0.0
@@ -134,20 +103,26 @@ if __name__ == "__main__":
         optimizer.param_groups[0]['lr'] = get_new_lr(i, epoch, config['lr_decay_after_epoch'], lr, 1E-5)
 
         if i % config['test_on_train_set_interval'] == config['test_on_train_set_interval'] - 1:
-            total_try = 0
-            success_try = 0
-            print("testing on train set:")
-            for j, cur_test_data in enumerate(train_data_provider, 0):
-                test_image, label = cur_test_data
-                test_image = test_image.to(device)
-                label = label.to(device)
-                output = net(test_image)
-                temp_test_report, success_sum, fail_sum = get_correct_test_count(label, output, config)
-                total_try += success_sum + fail_sum
-                success_try += success_sum
-                test_report = test_report + temp_test_report
+            run_test(config, net.state_dict(), log_read_file=False)
+        # if i % config['test_on_train_set_interval'] == config['test_on_train_set_interval'] - 1:
+        #     total_try = 0
+        #     success_try = 0
+        #     # 测试报告
+        #     test_report = []
+        #     print("testing on train set:")
+        #     for j, cur_test_data in enumerate(train_data_provider, 0):
+        #         test_image, label = cur_test_data
+        #         test_image = test_image.to(device)
+        #         label = label.to(device)
+        #         output = net(test_image)
+        #         temp_test_report, success_sum, fail_sum = get_correct_test_count(label, output, config)
+        #         total_try += success_sum + fail_sum
+        #         success_try += success_sum
+        #         test_report.extend(temp_test_report)
+        #
+        #     print("success on train set: ", success_try / total_try)
+        #     # 处理测试报告
 
-            print("success on train set: ", success_try / total_try)
 
         if i % config['save_ckpt_interval'] == config['save_ckpt_interval'] - 1:
             ckpt_final_save_path = save_ckpt_folder + "/" + save_ckpt_name
@@ -158,3 +133,4 @@ if __name__ == "__main__":
     torch.save(net.state_dict(), save_ckpt_folder + "/" + save_ckpt_name)
     np.save(save_ckpt_folder + "/current_loss.npy", loss)
     np.save(save_ckpt_folder + "/symbol_mapping.npy", dataset.class_to_channel_mapping)
+

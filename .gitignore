@@ -3,6 +3,7 @@ back
 .idea
 AdvancedMnist.zip
 datasets
+test
 files
 **.orig
 **/__pycache__

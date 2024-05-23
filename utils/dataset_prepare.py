@@ -58,7 +58,7 @@ def process_image(image: np.ndarray, resize_x: int, resize_y: int, reverse=False
 
 class BaseDataSet(object):
     def __init__(self, dataset_name: str, base_path: str, output_class: int, resize_x: int, resize_y: int,
-                 train_test_split_ratio: float):
+                 train_test_split_ratio: float, log_read_file=True):
         self.dataset_name = dataset_name
         self.base_path = base_path
         self.output_class = output_class
@@ -68,24 +68,27 @@ class BaseDataSet(object):
         self.train_datasets = []
         self.test_datasets = []
         self.class_to_channel_mapping = {}
+        self.log_read_file = log_read_file
         self.read_dataset()
 
     def _read_dataset(self):
         pass
 
     def read_dataset(self):
-        print("正在读取数据集：" + self.dataset_name)
+        if self.log_read_file:
+            print("正在读取数据集：" + self.dataset_name)
         self._read_dataset()
-        print("数据集" + self.dataset_name + "读取完毕")
+        if self.log_read_file:
+            print("数据集" + self.dataset_name + "读取完毕")
 
 
 class HandWrittenMathSymbols(BaseDataSet):
     def __init__(self, dataset_name: str, base_path: str, output_class: int, resize_x: int, resize_y: int,
-                 train_test_split_ratio: float, random_seed=114514):
+                 train_test_split_ratio: float, random_seed=114514, log_read_file=True):
         """
         :param base_path: 指向分类文件夹的上一级即可
         """
-        super().__init__(dataset_name, base_path, output_class, resize_x, resize_y, train_test_split_ratio)
+        super().__init__(dataset_name, base_path, output_class, resize_x, resize_y, train_test_split_ratio, log_read_file)
         random.seed(random_seed)
 
     def _read_dataset(self):
@@ -115,7 +118,8 @@ class HandWrittenMathSymbols(BaseDataSet):
                 # print(labeled_image.shape)
                 # input()
                 per_class_object_counter += 1
-            print("标签 " + label + " 读取完毕, 共" + str(per_class_object_counter) + "个项目")
+            if self.log_read_file:
+                print("标签 " + label + " 读取完毕, 共" + str(per_class_object_counter) + "个项目")
 
 
 if __name__ == "__main__":
