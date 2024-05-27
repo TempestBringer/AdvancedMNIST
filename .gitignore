@@ -8,3 +8,4 @@ files
 **.orig
 **/__pycache__
 MNIST
+transfer

@@ -29,3 +29,9 @@ save_ckpt_interval: 4
 
 # test
 test_save_path: "./ckpt"
+
+# transfer learning
+new_output_class: 16
+new_dataset_folder: "./datasets/HASYv2/my"
+save_transfer_folder: "./transfer"
+save_transfer_ckpt: "./transfer.ckpt"

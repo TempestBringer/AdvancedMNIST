@@ -17,14 +17,14 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_test(global_config: dict, state_dict=None, log_read_file=True, test_dataset_provider=None):
+def run_test(net, global_config: dict, state_dict=None, log_read_file=True, test_dataset_provider=None):
     # 设备
     device = global_config['device']
     device = torch.device(device)
     # 标签集映射
     label_mapping = np.load(global_config['save_ckpt_folder'] + "/symbol_mapping.npy", allow_pickle=True).item()
     # 实例化网络
-    net = SampleNetB(output_class=global_config['output_class'], is_training=False)
+    # net = SampleNetB(output_class=global_config['output_class'], is_training=False)
     if state_dict is None:
         net.load_state_dict(torch.load(global_config['read_ckpt']))
     else:
