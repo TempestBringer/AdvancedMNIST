@@ -37,22 +37,22 @@ if __name__ == "__main__":
         print("seed: " + str(seed))
 
     # 网络定义
+    print(config['output_class'])
     net = SampleNetB(output_class=config['output_class'], is_training=True)
     # 读取ckpt
-    try:
-        if os.path.exists(config['read_ckpt']):
-            net.load_state_dict(torch.load(config['read_ckpt']))
-    except:
-        print("无原始ckpt可供读取")
+    print(config['read_ckpt'])
+    if os.path.exists(config['read_ckpt']):
+        net.load_state_dict(torch.load(config['read_ckpt']))
         exit()
     print("迁移前网络结构")
     print(net.layers)
+    print(net.layers[0].parameters())
     # 删除后两层
     del net.layers[8]
     del net.layers[7]
     net.layers.append(nn.Linear(320, config['new_output_class']))
     net.layers.append(nn.ReLU())
-    # 冻结前7层
+    # 一共9层，冻结前7层
     for layer_index in range(7):
         net.layers[layer_index].requires_grad_(False)
     print("迁移后网络结构")
@@ -123,6 +123,8 @@ if __name__ == "__main__":
         if i % config['test_on_train_set_interval'] == config['test_on_train_set_interval'] - 1:
             print("在训练集上测试")
             run_test(net, config, net.state_dict(), log_read_file=False, test_dataset_provider=train_data_provider)
+            print("在测试集上测试")
+            run_test(net, config, net.state_dict(), log_read_file=False, test_dataset_provider=test_data_provider)
 
         if i % config['save_ckpt_interval'] == config['save_ckpt_interval'] - 1:
             ckpt_final_save_path = save_ckpt_folder + "/" + save_ckpt_name

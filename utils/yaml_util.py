@@ -2,7 +2,14 @@ import yaml
 
 
 def read_yaml_file(yaml_file_path: str, print_argument=True):
-    # 打开yaml文件
+    '''
+    打开yaml文件
+    :param yaml_file_path:
+    :param print_argument:
+    :return:
+    >>> read_yaml_file("config.yaml")
+    '''
+
     file = open(yaml_file_path, 'r', encoding="utf-8")
     file_data = file.read()
     file.close()

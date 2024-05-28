@@ -58,7 +58,7 @@ def process_image(image: np.ndarray, resize_x: int, resize_y: int, reverse=False
 
 class BaseDataSet(object):
     def __init__(self, dataset_name: str, base_path: str, output_class: int, resize_x: int, resize_y: int,
-                 train_test_split_ratio: float, log_read_file=True):
+                 train_test_split_ratio: float, log_read_file=True, reverse=False):
         self.dataset_name = dataset_name
         self.base_path = base_path
         self.output_class = output_class
@@ -69,6 +69,7 @@ class BaseDataSet(object):
         self.test_datasets = []
         self.class_to_channel_mapping = {}
         self.log_read_file = log_read_file
+        self.reverse = reverse
         self.read_dataset()
 
     def _read_dataset(self):
@@ -84,11 +85,12 @@ class BaseDataSet(object):
 
 class HandWrittenMathSymbols(BaseDataSet):
     def __init__(self, dataset_name: str, base_path: str, output_class: int, resize_x: int, resize_y: int,
-                 train_test_split_ratio: float, random_seed=114514, log_read_file=True):
+                 train_test_split_ratio: float, random_seed=114514, log_read_file=True, reverse=False):
         """
         :param base_path: 指向分类文件夹的上一级即可
         """
-        super().__init__(dataset_name, base_path, output_class, resize_x, resize_y, train_test_split_ratio, log_read_file)
+        super().__init__(dataset_name, base_path, output_class, resize_x, resize_y, train_test_split_ratio,
+                         log_read_file, reverse)
         random.seed(random_seed)
 
     def _read_dataset(self):
@@ -104,7 +106,7 @@ class HandWrittenMathSymbols(BaseDataSet):
                 # for labeled_image in labeled_images:
                 labeled_image_path = label_folder_path + "/" + labeled_image
                 # labeled_image = read_image(labeled_image_path, self.resize_x, self.resize_y, do_resize_and_padding=True)
-                labeled_image = read_image(labeled_image_path, self.resize_x, self.resize_y)
+                labeled_image = read_image(labeled_image_path, self.resize_x, self.resize_y, reverse=self.reverse)
                 # label_vec = np.zeros(self.output_class, dtype=np.float32)[np.newaxis, :]
                 label_vec = np.zeros(self.output_class, dtype=np.float32)
 

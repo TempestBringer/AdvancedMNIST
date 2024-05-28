@@ -8,8 +8,8 @@ data_load_workers: 1
 # dataset
 dataset_do_split: False
 dataset_do_split_ratio: 0.7
-dataset_train: "./MNIST/train"
-dataset_test: "./MNIST/test"
+dataset_train: "./datasets/MNIST/train"
+dataset_test: "./datasets/MNIST/test"
 
 # load ckpt
 read_ckpt: "./ckpt/test.ckpt"
@@ -32,6 +32,7 @@ test_save_path: "./ckpt"
 
 # transfer learning
 new_output_class: 16
+#new_dataset_folder: "./datasets/MNIST/test"
 new_dataset_folder: "./datasets/HASYv2/my"
 save_transfer_folder: "./transfer"
 save_transfer_ckpt: "./transfer.ckpt"

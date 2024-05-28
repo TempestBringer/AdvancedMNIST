@@ -147,88 +147,53 @@ class SampleNetB(nn.Module):
         self.layers.append(nn.Linear(320, self.output_class))
         self.layers.append(nn.ReLU())
 
-
     def forward(self, x):
         return self.layers.forward(x)
-        # for layer in self.layers:
-        #     x = layer(x)
-        # return x
-
-
-class SampleNetCBlock(nn.Module):
-    def __init__(self, ch_in, ch_out, stride=1):
-        super().__init__()
-        self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=stride, padding=1)
-        self.bn1 = nn.BatchNorm2d(ch_out)
-        self.conv2 = nn.Conv2d(ch_out, ch_out, kernel_size=3, stride=1, padding=1)
-        self.bn2 = nn.BatchNorm2d(ch_out)
-
-        # [b, ch_in, h, w] => [b, ch_out, h, w]
-        self.extra = nn.Sequential(
-            nn.Conv2d(ch_in, ch_out, kernel_size=1, stride=stride),
-            nn.BatchNorm2d(ch_out)
-        )
-
-    def forward(self, x):
-        '''
-        :param x: [b, ch, h, w]
-        :return:
-        '''
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.bn2(self.conv2(out))
-        # short cut
-        # extra module: [b, ch_in, h, w] => [b, ch_out, h, w]
-        # element-wise add:
-        out = self.extra(x) + out
-
-        return out
 
 
 class SampleNetC(nn.Module):
-    def __init__(self, output_class: int, is_training=True):
+    def __init__(self, output_class_1: int, output_class_2: int, is_training: bool):
         super().__init__()
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(32)
-        )
+        self.conv_layers = nn.Sequential()
+        self.linear_0 = None
+        self.linear_0_relu = None
+        self.linear_A = None
+        self.linear_A_relu = None
+        self.linear_B = None
+        self.linear_B_relu = None
+        self.output_class_1 = output_class_1
+        self.output_class_2 = output_class_2 - output_class_1
+        self.is_training = is_training
+        self.build_layers()
 
-        # follow 4 blocks
-        # [b, 64, h, w] => [b, 128, h/2, w/2]
-        self.blk1 = SampleNetCBlock(32, 64, stride=2)
-        # [b, 128, h/2, w/2] => [b, 256, h/4, w/4]
-        self.blk2 = SampleNetCBlock(64, 128, stride=2)
-        # [b, 256, h/4, w/4] => [b, 512, h/8, w/8]
-        self.blk3 = SampleNetCBlock(128, 256, stride=2)
-        # [b, 512, h/8, w/8] => [b, 512, h/16, w/16]
-        self.blk4 = SampleNetCBlock(256, 256, stride=2)
-
-        self.out_layer = nn.Linear(256 * 1 * 1, output_class)
-        self.output_relu = nn.ReLU()
-
+    def build_layers(self):
+        # in_channel, out_channel, kernel_size, stride, padding, padding_mode, dilation, groups, bias
+        # 28x28x1 -> 26*26*8
+        self.conv_layers.append(nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3))
+        # 26*26*8 -> 13*13*8
+        self.conv_layers.append(nn.MaxPool2d(2))
+        self.conv_layers.append(nn.BatchNorm2d(8))
+        # 13*13*8 -> 10*10*32
+        self.conv_layers.append(nn.Conv2d(in_channels=8, out_channels=32, kernel_size=4))
+        # 10*10*32 -> 3200
+        self.conv_layers.append(nn.Flatten(1, 3))
+        # 3200 -> 256
+        self.linear_0 = nn.Linear(3200, 320)
+        self.linear_0_relu = nn.ReLU()
+        # 256 -> 64
+        self.linear_A = nn.Linear(320, self.output_class_1)
+        # 64 -> output_class
+        self.linear_A_relu = nn.ReLU()
+        # 256 -> 64
+        self.linear_B = nn.Linear(320, self.output_class_2)
+        # 64 -> output_class
+        self.linear_B_relu = nn.ReLU()
     def forward(self, x):
-        # [b, 1, h, w] => [b, 64, h, w]
-        x = F.relu(self.conv1(x))
-        # print(x.shape)
-
-        # [b, 64, h, w] => [b, 512, h/16, w/16]
-        x = self.blk1(x)
-        # print(x.shape)
-        x = self.blk2(x)
-        # print(x.shape)
-        x = self.blk3(x)
-        # print(x.shape)
-        x = self.blk4(x)
-        # print(x.shape)
-
-        # [b, 512, h/16, w/16] => [b, 512, 1, 1]
-        x = F.adaptive_avg_pool2d(x, [1, 1])
-        # print(x.shape)
-        # [b, 512, 1, 1] => [b, 512]
-        x = x.view(x.size(0), -1)
-        # print(x.shape)
-        # [b, 512] => [b, 10]
-        x = self.out_layer(x)
-        # print(x.shape)
-        # input()
-        x = self.output_relu(x)
-        return x
+        x = self.conv_layers.forward(x)
+        x = self.linear_0(x)
+        x = self.linear_0_relu(x)
+        x_1 = self.linear_A(x)
+        x_1 = self.linear_A_relu(x_1)
+        x_2 = self.linear_B(x)
+        x_2 = self.linear_B_relu(x_2)
+        return torch.cat((x_1, x_2), 1)

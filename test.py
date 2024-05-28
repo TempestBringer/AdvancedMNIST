@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from nets import SampleNetB
 from utils.analyse_util import get_correct_test_count
-from utils.dataset_prepare import HandWrittenMathSymbols, process_image
+from utils.dataset_prepare import HandWrittenMathSymbols
 from utils.yaml_util import read_yaml_file
 
 
