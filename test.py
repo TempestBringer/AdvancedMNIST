@@ -3,6 +3,7 @@ import os.path
 
 import numpy as np
 import torch
+from matplotlib import pyplot as plt
 from tqdm import tqdm
 
 from nets import SampleNetB
@@ -17,14 +18,15 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_test(net, global_config: dict, state_dict=None, log_read_file=True, test_dataset_provider=None):
+def run_test(global_config: dict, net=None, state_dict=None, log_read_file=True, test_dataset_provider=None):
     # 设备
     device = global_config['device']
     device = torch.device(device)
     # 标签集映射
     label_mapping = np.load(global_config['save_ckpt_folder'] + "/symbol_mapping.npy", allow_pickle=True).item()
     # 实例化网络
-    # net = SampleNetB(output_class=global_config['output_class'], is_training=False)
+    if net is None:
+        net = SampleNetB(output_class=global_config['output_class'], is_training=False)
     if state_dict is None:
         net.load_state_dict(torch.load(global_config['read_ckpt']))
     else:
@@ -79,4 +81,19 @@ if __name__ == "__main__":
     # 解析参数
     parsed_args = parse_args()
     config = read_yaml_file(parsed_args.config)
-    run_test(config)
+    epoch_record = []
+    success_rate_test = []
+    save_ckpt_folder = config['save_ckpt_folder']
+    for i in range(config['epoch']):
+        config['read_ckpt'] = "./ckpt/final/" + str(i) + "_test.ckpt"
+        total_try, success_try, test_report = run_test(global_config=config)
+        epoch_record.append(i)
+        success_rate_test.append(success_try/total_try)
+
+
+    plt.plot(epoch_record, success_rate_test, label="success rate on train set")
+    plt.xlabel("epoch")
+    plt.ylabel("success rate(%)")
+    plt.legend()
+    plt.savefig(save_ckpt_folder + "/test_success_rate.png")
+    plt.clf()
