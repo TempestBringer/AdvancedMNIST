@@ -49,7 +49,7 @@ pip install PyQt5
 数据集的安排是，对于一个路径，其下应有许多以标签命名的文件夹，每个标签的文件夹下有若干归属于此标签的图像，不要求图像大小一致。
 如下图，是我们处理后的MNIST数据集文件结构图
 
-![处理后的MNIST数据集结构](.\images\dataset_structure.png)  
+![处理后的MNIST数据集结构](./images/dataset_structure.png)  
 ## 配置文件说明
 ```
 # common
@@ -97,11 +97,11 @@ save_transfer_ckpt: "./transfer.ckpt"
 
 输入输出
 
-![网络输入输出](.\images\模型输入输出.png)
+![网络输入输出](./images/模型输入输出.png)
 
 网路结构
 
-![网络结构](.\images\net.onnx.png)
+![网络结构](./images/net.onnx.png)
 
 
 
@@ -116,11 +116,11 @@ python train.py --config config.yaml
 ## 训练结果
 训练时loss
 
-![训练时loss](.\images\train_loss.png)
+![训练时loss](./images/train_loss.png)
 
 训练时在训练集和验证集上的正确率
 
-![训练时正确率](.\images\train_success_rate.png)
+![训练时正确率](./images/train_success_rate.png)
 
 
 
@@ -134,7 +134,7 @@ python test.py --config config.yaml
 ## 测试效果
 训练时在训练集和验证集上的正确率
 
-![训练时正确率](.\images\test_success_rate.png)
+![训练时正确率](./images/test_success_rate.png)
 
 ## 推理
 
@@ -152,4 +152,4 @@ python app.py
 ## 某一次的训练日志 太长放最后
 训练日志
 
-![训练日志](.\images\训练日志.png)  
+![训练日志](./images/训练日志.png)  
