@@ -60,10 +60,11 @@ if __name__ == "__main__":
                                       config['image_compress_y'])
 
     # 读取图片
-    img = read_image("E:/Projects/PyCharm/AdvancedMnist/datasets/HASYv2/my/2/v2-00370.png",
+    img = read_image("E:/Projects/PyCharm/AdvancedMnist/datasets/MNIST/test/6/66.png",
+    # img = read_image("E:/Projects/PyCharm/AdvancedMnist/datasets/HASYv2/my/2/v2-00370.png",
                      config['image_compress_x'],
                      config['image_compress_y'],
-                     reverse=True)
+                     reverse=False)
 
     pos = infer_module.infer_from_processed_image(img)
     print(pos)
