@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from nets import *
 from test import run_test
@@ -45,20 +46,28 @@ if __name__ == "__main__":
     net = SampleNetB(output_class=config['output_class'], is_training=True)
 
     # 是否继续训练
-    try:
-        if os.path.exists(config['read_ckpt']):
-            net.load_state_dict(torch.load(config['read_ckpt']))
-    except:
-        pass
+    if config['do_load_ckpt'] == True:
+        try:
+            if os.path.exists(config['read_ckpt']):
+                net.load_state_dict(torch.load(config['read_ckpt']))
+                print("成功加载权重文件以继续训练")
+        except:
+            pass
+    else:
+        print("不读取权重文件直接开始训练")
     # 读取训练集
     train_dataset = HandWrittenMathSymbols("MNIST-训练集",
                                            config['dataset_train'],
                                            config['output_class'],
                                            config["image_compress_x"],
                                            config["image_compress_y"],
-                                           train_test_split_ratio=1.0)
+                                           train_test_split_ratio=config['train_valid_split_ratio'])
     # 打包进dataloader
     train_data_provider = torch.utils.data.DataLoader(train_dataset.train_datasets,
+                                                      batch_size=config['batch_size'],
+                                                      shuffle=True,
+                                                      num_workers=config['data_load_workers'])
+    valid_data_provider = torch.utils.data.DataLoader(train_dataset.test_datasets,
                                                       batch_size=config['batch_size'],
                                                       shuffle=True,
                                                       num_workers=config['data_load_workers'])
@@ -74,9 +83,10 @@ if __name__ == "__main__":
     criterion = criterion.to(device)
 
     # 训练循环
+    epoch_record = []
     loss = []
     success_rate_train = []
-    success_rate_test = []
+    success_rate_valid = []
 
     for i in range(epoch):
         loss_count = 0
@@ -94,22 +104,47 @@ if __name__ == "__main__":
             loss_count += 1
             loss_sum += cur_loss.item()
 
+        loss.append(loss_sum / loss_count)
+
         print("epoch: " + str(i) + " loss: " + str(loss_sum / loss_count) + " lr: " + str(optimizer.param_groups[0]['lr']))
         # lr_scheduler.step(i)
         optimizer.param_groups[0]['lr'] = get_new_lr(i, epoch, config['lr_decay_after_epoch'], lr, 1E-5)
 
         if i % config['test_on_train_set_interval'] == config['test_on_train_set_interval'] - 1:
+            epoch_record.append(i)
             print("在训练集上测试")
-            run_test(net, config, net.state_dict(), log_read_file=False, test_dataset_provider=train_data_provider)
+            total_try, success_try, test_report = run_test(config, net, net.state_dict(), log_read_file=False,
+                                                           test_dataset_provider=train_data_provider)
+            success_rate_train.append(success_try * 100 / total_try)
 
+            print("在校验集上测试")
+            total_try, success_try, test_report = run_test(config, net, net.state_dict(), log_read_file=False,
+                                                           test_dataset_provider=valid_data_provider)
+            success_rate_valid.append(success_try * 100 / total_try)
 
         if i % config['save_ckpt_interval'] == config['save_ckpt_interval'] - 1:
-            ckpt_final_save_path = save_ckpt_folder + "/" + save_ckpt_name
+            ckpt_final_save_path = save_ckpt_folder + "/" + str(i) + "_" + save_ckpt_name
             print(f"saving ckpt to {ckpt_final_save_path}")
             torch.save(net.state_dict(), ckpt_final_save_path)
 
     # 保存权重
     torch.save(net.state_dict(), save_ckpt_folder + "/" + save_ckpt_name)
     np.save(save_ckpt_folder + "/current_loss.npy", loss)
+
+    # 画图
+    plt.plot(epoch_record, loss, label="avg loss")
+    plt.xlabel("epoch")
+    plt.ylabel("average MSELoss")
+    plt.legend()
+    plt.savefig(save_ckpt_folder + "/train_loss.png")
+    plt.clf()
+
+    plt.plot(epoch_record, success_rate_train, label="success rate on train set")
+    plt.plot(epoch_record, success_rate_valid, label="success rate on valid set")
+    plt.xlabel("epoch")
+    plt.ylabel("success rate(%)")
+    plt.legend()
+    plt.savefig(save_ckpt_folder + "/train_success_rate.png")
+    plt.clf()
 
 
