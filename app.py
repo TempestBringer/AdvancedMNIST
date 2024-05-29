@@ -36,7 +36,7 @@ class MainWindow(QWidget):
         self.image_compress_x = self.config['image_compress_x']
         self.image_compress_y = self.config['image_compress_y']
         self.reverse_color = True
-        self.pen_width = 15
+        self.pen_width = 17
         self.edge_width = 4
         self.show_img_plot_on_analyse = False
         self.infer_module = AdvancedMNISTInfer(self.read_ckpt,
@@ -64,10 +64,34 @@ class MainWindow(QWidget):
         self.static_lines = []
         self._prepare_static_lines()
 
+        # +按钮
+        self.operation_plus_button = QPushButton('+')
+        self.operation_plus_button.setParent(self)
+        self.operation_plus_button.setGeometry(20, 450, 100, 40)
+        # +按钮
+        self.operation_minus_button = QPushButton('-')
+        self.operation_minus_button.setParent(self)
+        self.operation_minus_button.setGeometry(150, 450, 100, 40)
+        # *按钮
+        self.operation_times_button = QPushButton('*')
+        self.operation_times_button.setParent(self)
+        self.operation_times_button.setGeometry(280, 450, 100, 40)
+        # /按钮
+        self.operation_divide_button = QPushButton('/')
+        self.operation_divide_button.setParent(self)
+        self.operation_divide_button.setGeometry(410, 450, 100, 40)
+        # (按钮
+        self.operation_left_button = QPushButton('(')
+        self.operation_left_button.setParent(self)
+        self.operation_left_button.setGeometry(540, 450, 100, 40)
+        # )按钮
+        self.operation_right_button = QPushButton(')')
+        self.operation_right_button.setParent(self)
+        self.operation_right_button.setGeometry(670, 450, 100, 40)
+
         # 分析按钮
         self.confirm_button = QPushButton('分析')
         self.confirm_button.setParent(self)
-        self.confirm_button.setGeometry(20, 500, 100, 40)
         self.confirm_button.setGeometry(20, 500, 100, 40)
         self.confirm_button.clicked.connect(self.analyst_hand_inputs)
         # 分析输入文本框
@@ -93,7 +117,37 @@ class MainWindow(QWidget):
         self.calc_result_box = QLineEdit()
         self.calc_result_box.setParent(self)
         self.calc_result_box.setGeometry(150, 600, 200, 40)
-        # 推理网络
+
+        self.operation_plus_button.clicked.connect(self.operation_plus_button_func_)
+        self.operation_minus_button.clicked.connect(self.operation_minus_button_func_)
+        self.operation_times_button.clicked.connect(self.operation_times_button_func_)
+        self.operation_divide_button.clicked.connect(self.operation_divide_button_func_)
+        self.operation_left_button.clicked.connect(self.operation_left_button_func_)
+        self.operation_right_button.clicked.connect(self.operation_right_button_func_)
+
+    def operation_plus_button_func_(self):
+        self.analyse_result_box.setText(self.analyse_result_box.text() + "+")
+        self._clear_paint_board()
+
+    def operation_minus_button_func_(self):
+        self.analyse_result_box.setText(self.analyse_result_box.text() + "-")
+        self._clear_paint_board()
+
+    def operation_times_button_func_(self):
+        self.analyse_result_box.setText(self.analyse_result_box.text() + "*")
+        self._clear_paint_board()
+
+    def operation_divide_button_func_(self):
+        self.analyse_result_box.setText(self.analyse_result_box.text() + "/")
+        self._clear_paint_board()
+
+    def operation_left_button_func_(self):
+        self.analyse_result_box.setText(self.analyse_result_box.text() + "(")
+        self._clear_paint_board()
+
+    def operation_right_button_func_(self):
+        self.analyse_result_box.setText(self.analyse_result_box.text() + ")")
+        self._clear_paint_board()
 
     def paintEvent(self, event):
         painter = QPainter()
