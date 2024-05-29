@@ -11,7 +11,7 @@ from PIL import Image
 
 
 def read_image(path: str, resize_x: int, resize_y: int, do_resize_and_padding=False, padding_from_ratio = 0.75,
-               reverse=False):
+               reverse=False, enwiden_image_line=False):
     """
     读取RGB图像转化为灰度并预处理
     :param path:
@@ -35,6 +35,17 @@ def read_image(path: str, resize_x: int, resize_y: int, do_resize_and_padding=Fa
     # print(grayed_image.shape)
     # input()
     resized_image = process_image(grayed_image, resize_x, resize_y, reverse=reverse)
+    if enwiden_image_line:
+        enwiden_image = np.zeros(shape=(resized_image.shape[0], resized_image.shape[1], resized_image.shape[2]))
+        for pixel_row in range(1, resized_image.shape[1]):
+            for pixel_col in range(1, resized_image.shape[2]):
+                # print(pixel_row, pixel_col)
+                # print(resized_image[0, pixel_row-1:pixel_row+1, pixel_col-1:pixel_col+1])
+                pixel_value = np.max(resized_image[0, pixel_row-1:pixel_row+1, pixel_col-1:pixel_col+1])
+                enwiden_image[:, pixel_row, pixel_col] = min(pixel_value*1.5, 1)
+
+        resized_image = enwiden_image
+
     return resized_image
 
 
@@ -58,7 +69,8 @@ def process_image(image: np.ndarray, resize_x: int, resize_y: int, reverse=False
 
 class BaseDataSet(object):
     def __init__(self, dataset_name: str, base_path: str, output_class: int, resize_x: int, resize_y: int,
-                 train_test_split_ratio: float, log_read_file=True, reverse=False):
+                 train_test_split_ratio: float, log_read_file=True, reverse=False, do_resize_and_padding=False,
+                 padding_from_ratio=0.75, enwiden_image_line=False):
         self.dataset_name = dataset_name
         self.base_path = base_path
         self.output_class = output_class
@@ -70,6 +82,9 @@ class BaseDataSet(object):
         self.class_to_channel_mapping = {}
         self.log_read_file = log_read_file
         self.reverse = reverse
+        self.do_resize_and_padding = do_resize_and_padding
+        self.padding_from_ratio = padding_from_ratio
+        self.enwiden_image_line = enwiden_image_line
         self.read_dataset()
 
     def _read_dataset(self):
@@ -85,12 +100,13 @@ class BaseDataSet(object):
 
 class HandWrittenMathSymbols(BaseDataSet):
     def __init__(self, dataset_name: str, base_path: str, output_class: int, resize_x: int, resize_y: int,
-                 train_test_split_ratio: float, random_seed=114514, log_read_file=True, reverse=False):
+                 train_test_split_ratio: float, random_seed=114514, log_read_file=True, reverse=False,
+                 do_resize_and_padding=False, padding_from_ratio=0.75, enwiden_image_line=False):
         """
         :param base_path: 指向分类文件夹的上一级即可
         """
         super().__init__(dataset_name, base_path, output_class, resize_x, resize_y, train_test_split_ratio,
-                         log_read_file, reverse)
+                         log_read_file, reverse, do_resize_and_padding, padding_from_ratio, enwiden_image_line)
         random.seed(random_seed)
 
     def _read_dataset(self):
@@ -106,7 +122,9 @@ class HandWrittenMathSymbols(BaseDataSet):
                 # for labeled_image in labeled_images:
                 labeled_image_path = label_folder_path + "/" + labeled_image
                 # labeled_image = read_image(labeled_image_path, self.resize_x, self.resize_y, do_resize_and_padding=True)
-                labeled_image = read_image(labeled_image_path, self.resize_x, self.resize_y, reverse=self.reverse)
+                labeled_image = read_image(labeled_image_path, self.resize_x, self.resize_y, reverse=self.reverse,
+                                           do_resize_and_padding=self.do_resize_and_padding,
+                                           padding_from_ratio=self.padding_from_ratio)
                 # label_vec = np.zeros(self.output_class, dtype=np.float32)[np.newaxis, :]
                 label_vec = np.zeros(self.output_class, dtype=np.float32)
 
