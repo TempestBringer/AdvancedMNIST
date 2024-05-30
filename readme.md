@@ -5,7 +5,6 @@
 
 3. [Handwritten math symbols dataset]https://www.kaggle.com/datasets/xainano/handwrittenmathsymbols
 
-我们尝试过用后三个数据集中的数字和符号集中的加减乘除以及括号来完成完整的四则运算，但是后三个数据集质量不佳，遂只用MNIST来做。
 
 ## 项目文件结构
 ```
