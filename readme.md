@@ -1,9 +1,9 @@
 ## 数据集 
 1. [MNIST] MNIST 训练集6000\*10张 测试集1000\*10张
 
-[//]: # (2. [Extended MNIST]https://www.kaggle.com/datasets/crawford/emnist?resource=download)
-3. [HASYv2]https://zenodo.org/records/259444#.Xe4DVZMzbOQ
-4. [Handwritten math symbols dataset]https://www.kaggle.com/datasets/xainano/handwrittenmathsymbols
+2. [HASYv2]https://zenodo.org/records/259444#.Xe4DVZMzbOQ
+
+3. [Handwritten math symbols dataset]https://www.kaggle.com/datasets/xainano/handwrittenmathsymbols
 
 我们尝试过用后三个数据集中的数字和符号集中的加减乘除以及括号来完成完整的四则运算，但是后三个数据集质量不佳，遂只用MNIST来做。
 
